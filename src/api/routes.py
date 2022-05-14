@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt, jwt_redis_blocklist
 
 api = Blueprint('api', __name__)
 app = Flask(__name__)
@@ -36,6 +36,7 @@ def singup():
     }
 
     return jsonify(response_body), 201
+
 # Login: endpoint que reciba un nombre de usuario y clave, lo verifique en la base de datos y genere el token
 @api.route('/login', methods=['POST'])
 def login():
@@ -53,5 +54,18 @@ def login():
     token=create_access_token(email)
     return jsonify({"token":token}), 200
 
-
 # Validar: endpoint que reciba un token y retorna si este es valido o no
+
+@api.route('/verify-token',methods=['POST'])
+@jwt_required()
+def verifyToken():    
+    userEmail=get_jwt_identity()
+    if not userEmail:
+        return "Token invalido", 401
+    print(userEmail)
+    return "Token correcto", 200
+
+@api.route('/logout', methods=['POST'])
+@jwt_required()
+def destroyToken():    
+    return jsonify(msg="Access token revoked")
