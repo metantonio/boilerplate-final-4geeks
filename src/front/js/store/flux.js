@@ -16,6 +16,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         },
       ],
       token: "",
+      refreshToken: "",
     },
     actions: {
       // Use getActions to call a function within a fuction
@@ -63,7 +64,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         if (resp.status !== 201) {
           return { code: resp.status, msg: resp.statusText };
         }
-        
+
         return { code: 201, msg: "Usuario registrado" };
       },
 
@@ -85,28 +86,33 @@ const getState = ({ getStore, getActions, setStore }) => {
         const data = await resp.json();
         console.log(data);
         const token = data.token;
+        const refreshToken = data.refreshToken;
 
-        setStore({ token });
+        setStore({ token, refreshToken });
         localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refreshToken);
         return { code: 200, msg: "Usuario registrado" };
       },
-      
-      logout:async ()=>{
-        /* const params = {
+
+      logout: async () => {
+        const store = getStore();
+        console.log(store);
+        const params = {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${store.token}`,
           },
         };
         const resp = await fetch(`${apiURL}/logout`, params);
         if (resp.status !== 200) {
           return { code: resp.status, msg: resp.statusText };
-        } */
+        }
 
-        setStore({ token:"" });
+        setStore({ token: "" });
         localStorage.removeItem("token");
         return { code: 200, msg: "Sesion cerrada" };
-      }
+      },
     },
   };
 };
